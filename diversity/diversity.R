@@ -38,15 +38,22 @@ for (dir in dirlist) {
     message(run)
     tryCatch({
         otu = read.otu.tsv(otufile)
-        svg(paste(run,"svg",sep="."))
-        summ = analyseOtu(otu)
-        dev.off()
-        tab = rbind(tab,summ)
-        rownames(tab)[dim(tab)[1]] = run
-        #added the suffix ("SSU"/"LSU") to the tad plot files
-        file.rename(from=paste(run,"svg",sep="."),
+        numTaxa = dim(otu)[1]
+        numInd = sum(otu$Count)
+        message(paste("Number of distinct taxa: ",numTaxa,"- Total individuals: ",numInd))
+        if ((numTaxa >= 20)&&(numInd >= 40)) {
+            svg(paste(run,"svg",sep="."))
+            summ = analyseOtu(otu)
+            dev.off()
+            tab = rbind(tab,summ)
+            rownames(tab)[dim(tab)[1]] = run
+            ##added the suffix ("SSU"/"LSU") to the tad plot files
+            file.rename(from=paste(run,"svg",sep="."),
                     to=file.path(dirname,"charts",paste(out_file_tag,"tad-plots.svg",sep="")))
-       cat("Processed ",run,"\n",sep="")
+        } else {
+            message("Too few species/individuals: SKIPPING")
+        }
+        cat("Processed ",run,"\n",sep="")
     }, error = function(cond) {if (file.exists(paste(run,"svg",sep="."))) file.remove(paste(run,"svg",sep=".")); cat(paste("Failed on run ",run,": ",cond,"\n",sep=""))})
 }
 #added the suffix ("SSU"/"LSU") to the diversity files
